@@ -1,0 +1,424 @@
+system {
+    host-name srx.kotilan.fi;
+    domain-name kotilan.fi;
+    time-zone Europe/Helsinki;
+    root-authentication {
+        encrypted-password "$1$ReG4uxAa$3dmrD3bRdxosL/ABHH0CG."; ## SECRET-DATA
+    }
+    name-server {
+        192.168.1.122;
+        8.8.8.8;
+        8.8.4.4;
+    }
+    login {
+        user mikin {
+            uid 2003;
+            class super-user;
+            authentication {
+                ssh-rsa "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAt5b42GRnF1xISlnNPx4sFrtrY30ggLOy+bJJLaOBC4OOBq81cXFKg2r9+sKJvdnPMtdaWLCq2J1KeqhOQ0OhF4ml6fNDMTBGqp+i2gMe3Dceom8ud6jNBEe0w/ghovpPy1cFsCTMnKZ4B1avm4M0tnWh3UPegYKtHdH0gtaPefHqZn9cckYvZfcrMlQcS5n5OeB3ELo/ZfhpNERBCFjCmGK39sHxu/MpGJ+0vtKmDwUEJnLjU7ZaLC81kyo5D4yFE2J13w5waZHjtWuuK+8eke35O8j8iJwNPHIm8Ov7MoQ7oJ4rsizR8Z5N8s80pvGozuiZavDdE3cP2kx43Z8hxQ=="; ## SECRET-DATA
+            }
+        }
+        user mikko {
+            uid 2004;
+            class super-user;
+            authentication {
+                ssh-rsa "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDFcqGL/Yd/DX+srii8Evay2ywvle17tEk86+Mkt82GKFjfXrZW/d1GoBaBLkj5KzO4YOuahfIz46c7VHYSPsyJni6IaXhG/g1I8q/CSjsWpwCkI/Ee4qVe2dJUJ0OcVOqdooyWO0KCczhbo/KFFd5ljJKyAdp6OIekH0FWYv2TrvL9X9ueX9QFLGvkcactnticFZnhZOwWJiail7rD5FToKzL3Sud1i3YuKu+dRB03taPO/csuj/2At9yWZ+i904P7Jpggxr/tCLy4OziWuLJHtDuhiTgAakS42uB+610fXmNTKk2Th+C8UtWyBf1hHar6SSjVES4tP+aHqGR/5EAx"; ## SECRET-DATA
+                ssh-rsa "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC1MGy7m1dKMW7Lgxdm2nbsE4/AKjJhuQ/yupdqwkN7ZhkKO2xTKoMdYvTNtZh1Qjzo7RgGDMmBVU7VNOswbqn2mMWP1hIyb4Dllj14o+Bo+N2ZZ+/dVz9IwA18rRbV7iXF+UCa/JQ6DE8K9qWFuKI0xRM+5wB0Jq3SfJqLlhLrrJJ8TV52VWps6u60vMtP6AmcjznF7EsOS/C95b28XUmnl3qYLOU+uPWg6+B9/oAyw4I4K/qbNTCcIaJpAd50ZxoRdU5czc8MKCtCGC6+5j1TQ3XnAA8im8pkpoe6T/De7glMTNhTVAB/U2e4OZ2y8yo6AymQinEVGN/I5edlHdcxzUj5bNX7VLE3J3jbXSoDzErYEmomkMXbSTV1/BJFfRtPx7uKSqL6RqslUp18INzxOd0Nl7chknzR6f5h8J/7mYdW83yXsh5MrtoITTW66+e/9d5ZFHshpF8+2aNevxZJyoUGesf5Hs4+JfVV4vlp/nD+CGk9d2l6Cym73olyiXs= mikko@ubuntu"; ## SECRET-DATA
+            }
+        }
+        user nautobot {
+            uid 2006;
+            class super-user;
+            authentication {
+                encrypted-password "$1$Det.0dKy$o7zdrnTWM8F514Em8DyH6/"; ## SECRET-DATA
+            }
+        }
+    }
+    services {
+        ssh {
+            root-login deny;
+        }
+        xnm-clear-text;
+        netconf {
+            ssh;
+        }
+        dns {                           
+            forwarders {
+                62.241.198.245;
+                62.241.198.246;
+            }
+        }
+        inactive: dhcp-local-server {
+            group kotiverkko {
+                interface vlan.10;
+            }
+        }
+        dhcp {
+            pool 192.168.100.0/24 {
+                router {
+                    192.168.100.1;
+                }
+            }
+            static-binding bc:76:c5:06:d2:b5 {
+                fixed-address {
+                    192.168.100.2;
+                }
+            }
+        }
+    }
+    syslog {
+        archive size 100k files 3;
+        user * {
+            any emergency;
+        }
+        file messages {
+            any critical;
+            authorization info;
+        }
+        file interactive-commands {
+            interactive-commands error;
+        }
+    }
+    max-configurations-on-flash 5;
+    max-configuration-rollbacks 5;
+    license {
+        autoupdate {
+            url https://ae1.juniper.net/junos/key_retrieval;
+        }
+    }
+    ntp {
+        server 62.241.198.253;
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        description Vara-access;
+        unit 0 {
+            family ethernet-switching {
+                port-mode access;       
+                vlan {
+                    members Kotiverkko-LAN;
+                }
+            }
+        }
+    }
+    ge-0/0/1 {
+        description WAN;
+        unit 0 {
+            family inet {
+                dhcp;
+            }
+        }
+    }
+    fe-0/0/2 {
+        description "Wi-Fi AP";
+        unit 0 {
+            family ethernet-switching {
+                port-mode access;
+                vlan {
+                    members Kotiverkko-LAN;
+                }
+            }
+        }
+    }
+    fe-0/0/3 {
+        description Sahkoadapteri;
+        unit 0 {
+            family ethernet-switching {
+                port-mode access;
+                vlan {
+                    members Kotiverkko-LAN;
+                }
+            }
+        }
+    }
+    fe-0/0/4 {
+        description "Raspberry Pi-2";
+        unit 0 {
+            family ethernet-switching {
+                port-mode access;
+                vlan {
+                    members Kotiverkko-LAN;
+                }
+            }
+        }
+    }
+    fe-0/0/5 {
+        description vapaa;
+        disable;
+        unit 0 {
+            family ethernet-switching {
+                port-mode access;       
+                vlan {
+                    members Kotiverkko-LAN;
+                }
+            }
+        }
+    }
+    fe-0/0/6 {
+        description Vallox;
+        unit 0 {
+            family ethernet-switching {
+                port-mode access;
+                vlan {
+                    members Kotiverkko-LAN;
+                }
+            }
+        }
+    }
+    fe-0/0/7 {
+        description "Raspberry Pi";
+        unit 0 {
+            family ethernet-switching {
+                port-mode access;
+                vlan {
+                    members Kotiverkko-LAN;
+                }
+            }
+        }
+    }
+    vlan {
+        description "Kotiverkko-LAN router";
+        unit 100 {
+            family inet {
+                address 192.168.100.1/24;
+            }
+        }
+    }
+}
+routing-options {
+    static {
+        inactive: route 0.0.0.0/0 next-hop 192.168.1.1;
+        route 192.168.2.0/24 next-hop 192.168.100.2;
+    }
+    autonomous-system 65002;
+}
+protocols {
+    bgp {
+        group quagga {
+            type external;
+            neighbor 192.168.1.122 {
+                peer-as 65001;
+            }
+        }
+    }                                   
+}
+security {
+    address-book {
+        global {
+            address Kotiverkko-LAN 192.168.100.0/24;
+            address docker 172.17.0.0/16;
+            address rpi-br 172.21.0.0/16;
+            address Huawei-DHCP 192.168.2.0/24;
+            address default 0.0.0.0/0;
+            address VLAN101 192.168.101.0/24;
+            address-set kotiverkko {
+                address Kotiverkko-LAN;
+                address docker;
+                address rpi-br;
+                address Huawei-DHCP;
+                address VLAN101;
+            }
+        }
+    }
+    alg {
+        dns {
+            disable;
+            doctoring {
+                none;
+            }
+        }
+    }
+    forwarding-options {
+        family {
+            inet6 {
+                mode packet-based;
+            }
+            iso {
+                mode packet-based;
+            }
+        }
+    }
+    nat {
+        source {
+            rule-set LAN-to-WAN {
+                from zone inside;
+                to zone outside;
+                rule 1 {
+                    match {
+                        source-address-name kotiverkko;
+                        destination-address-name default;
+                    }
+                    then {
+                        source-nat {
+                            interface;
+                        }
+                    }
+                }                       
+            }
+            inactive: rule-set LAN-to-VLAN101 {
+                from interface ge-0/0/0.0;
+                to zone VLAN101;
+                rule 101 {
+                    match {
+                        source-address-name Huawei-DHCP;
+                        destination-address-name VLAN101;
+                    }
+                    then {
+                        source-nat {
+                            interface;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    policies {
+        from-zone inside to-zone outside {
+            policy LAN-to-WAN {
+                match {
+                    source-address kotiverkko;
+                    destination-address any;
+                    application any;
+                }
+                then {
+                    permit;
+                }
+            }
+            policy default {
+                match {
+                    source-address any;
+                    destination-address any;
+                    application any;
+                }
+                then {
+                    deny;
+                    count;
+                }
+            }
+        }
+    }
+    zones {
+        security-zone outside {
+            interfaces {
+                ge-0/0/1.0 {
+                    host-inbound-traffic {
+                        system-services {
+                            dhcp;
+                            dns;
+                        }
+                    }                   
+                }
+            }
+        }
+        security-zone inside {
+            host-inbound-traffic {
+                system-services {
+                    all;
+                }
+                protocols {
+                    all;
+                }
+            }
+            interfaces {
+                ge-0/0/0.0;
+                fe-0/0/2.0;
+                fe-0/0/3.0;
+                fe-0/0/4.0;
+                fe-0/0/5.0;
+                fe-0/0/6.0;
+                vlan.100;
+                fe-0/0/7.0;
+            }
+        }
+        inactive: security-zone VLAN101 {
+            host-inbound-traffic {
+                system-services {
+                    ssh;
+                    ping;
+                    all;
+                }
+                protocols {
+                    all;
+                }
+            }
+            interfaces {
+                fe-0/0/7.0;
+                vlan.101;
+            }
+        }
+    }
+}
+inactive: access {
+    address-assignment {
+        pool kotiverkko {
+            family inet {
+                network 192.168.1.0/24;
+                range range1 {
+                    low 192.168.1.96;
+                    high 192.168.1.99;
+                }
+                range range2 {
+                    low 192.168.1.102;
+                    high 192.168.1.127; 
+                }
+                dhcp-attributes {
+                    name-server {
+                        inactive: 192.89.123.230;
+                        inactive: 193.210.19.190;
+                        192.168.1.122;
+                    }
+                    router {
+                        192.168.1.100;
+                    }
+                }
+                host vallox {
+                    hardware-address b0:57:a6:31:8e:10;
+                    ip-address 192.168.1.111;
+                }
+                host raspberry_pi {
+                    hardware-address dc:a6:32:80:1c:eb;
+                    ip-address 192.168.1.122;
+                }
+                host FWiFi {
+                    hardware-address 90:6c:ac:19:71:4b;
+                    ip-address 192.168.1.99;
+                }
+                host AirLink {
+                    hardware-address 34:21:09:32:5c:58;
+                    ip-address 192.168.1.129;
+                }
+                host raspberry_pi-2 {
+                    hardware-address e4:5f:01:32:19:af;
+                    ip-address 192.168.1.123;
+                }
+                host mikko {
+                    hardware-address 40:61:86:91:ef:fe;
+                    ip-address 192.168.1.125;
+                }
+            }
+        }
+    }
+}
+vlans {
+    Kotiverkko-LAN {
+        vlan-id 100;
+        interface {
+            fe-0/0/2.0;
+            fe-0/0/3.0;
+            fe-0/0/4.0;
+            fe-0/0/5.0;
+            fe-0/0/6.0;
+            ge-0/0/0.0;
+        }
+        l3-interface vlan.100;
+    }
+    inactive: VLAN101 {                 
+        vlan-id 101;
+        interface {
+            fe-0/0/7.0;
+        }
+        l3-interface vlan.101;
+    }
+}
+
